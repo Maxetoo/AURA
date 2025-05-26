@@ -1,0 +1,52 @@
+@import url('./variables.css');
+@import url('https://fonts.googleapis.com/css2?family=Varela+Round&display=swap');
+*,
+html,
+body {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
+
+body,
+html {
+    -webkit-tap-highlight-color: transparent;
+    font-family: 'Varela Round', sans-serif;
+    font-weight: 400;
+    background: var(--background-color);
+    color: var( --secondary-color);
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+h1,
+h2,
+.logo {
+    font-family: 'Varela Round', sans-serif;
+}
+
+p,
+li,
+h3,
+h4,
+nav,
+input,
+select,
+textarea,
+button {
+    font-family: 'Varela Round', sans-serif;
+    font-weight: normal;
+}
+
+button {
+    user-select: none;
+    cursor: pointer;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    background: none;
+    border: none;
+    outline: none;
+}
