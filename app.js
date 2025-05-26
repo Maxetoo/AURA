@@ -16,16 +16,16 @@ const cors = require('cors');
 
 
 
-// const origin = 'https://www.willykanga.com';
-const origin = 'http://localhost:3000'
+const origin = 'https://aura-a2kd.onrender.com'
+// const origin = 'http://localhost:3000'
 
  
 // Express app and server initialization
 const app = express();
 const server = http.createServer(app);
-
+ 
 // build static file 
-app.use(express.static(path.resolve('./frontend/build')));
+app.use(express.static(path.resolve('./frontend/dist')));
  
 app.set('trust proxy', 1); 
 
