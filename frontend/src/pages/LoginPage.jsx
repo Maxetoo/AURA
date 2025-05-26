@@ -84,7 +84,7 @@ const Wrapper = styled.div`
 
   .secondary_wrapper {
     margin-top: 10rem;
-    width: 90%;
+    width: 80%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -158,7 +158,6 @@ const Wrapper = styled.div`
     margin-top: 2rem;
     background: var(--primary-color);
     color: var(--white-color);
-    width: 400px;
     padding: 1rem 3rem;
     height: 60px;
     border: none;

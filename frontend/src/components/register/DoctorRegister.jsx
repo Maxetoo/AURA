@@ -162,7 +162,7 @@ const DoctorRegister = () => {
           <input
             type="date"
             placeholder="Date of birth"
-            value={dateOfBirth}
+            value={dateOfBirth ? new Date(dateOfBirth).toISOString().split('T')[0] : ''}
             onChange={(e) =>
               dispatch(
                 fillSignupInputs({
@@ -371,6 +371,21 @@ const Wrapper = styled.div`
     outline: none;
   }
 
+  input[type="date"] {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  font-size: 1em;
+  height: 60px;
+  border-radius: 35px;
+  border: solid 1.5px var(--stroke-color);
+  outline: none;
+  background-color: white;
+  color: black;
+}
+
+
   .password {
     position: relative;
   }
@@ -398,7 +413,6 @@ const Wrapper = styled.div`
     margin-top: 3rem;
     background: var(--primary-color);
     color: var(--white-color);
-    width: 400px;
     padding: 1rem 3rem;
     height: 60px;
     border: none;
