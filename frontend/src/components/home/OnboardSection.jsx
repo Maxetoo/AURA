@@ -1,15 +1,29 @@
 import React from 'react'
 import styled from 'styled-components';
+import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 const OnboardSection = () => {
+  const { userCookie } = useSelector((store) => store.auth);
+
   return (
     <Wrapper>
         <div className="secondary_wrapper">
         <h3>Begin your Journey Today</h3>
         <p>Take the first step toward understanding and improving your mental wellbeing with our comprehensive assessment tools and professional support.</p>
-        <button type="button">
-            Create Your Free Account
-        </button>
+        {
+            userCookie ?
+            <Link to={'/symptomChecker'}>
+              <button type="button">
+                  Start Symptom Checker
+              </button>
+            </Link>
+            : <Link to={'/signup'}>
+              <button type='button'>
+                  Get Started
+              </button>
+            </Link>
+        }
         </div>
     </Wrapper>
   )

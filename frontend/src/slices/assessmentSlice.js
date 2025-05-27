@@ -150,6 +150,14 @@ const analysisSlice = createSlice({
       handleSelectAssessment: (state, action) => {
         state.selectedAssessment = action.payload
       },
+      reloadAssessment: (state, action) => {
+        const {analysisId} = action.payload
+        state.currentAssessmentAnalysis = analysisId
+        localStorage.setItem(
+          'assessmentAnalysis',
+          JSON.stringify(analysisId)
+        );
+      }
     },
     extraReducers(builder) {
         builder

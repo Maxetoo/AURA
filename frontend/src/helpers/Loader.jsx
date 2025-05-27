@@ -1,9 +1,9 @@
 import React from 'react'
 import styled from 'styled-components';
 
-const Loader = () => {
+const Loader = ({borderColor}) => {
   return (
-    <Wrapper></Wrapper>
+    <Wrapper style={{borderRightColor: borderColor}}></Wrapper>
   )
 }
 

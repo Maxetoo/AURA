@@ -48,11 +48,11 @@ const AssessmentPage = () => {
                 (getAssessmentLoad && assessment?.review?.length === 0) ||activeAssessments.length === 0 ? <div className="load_section">
                   <Loader/>
                 </div> :
-                activeAssessments.map((values, index) => {
+                activeAssessments.map((values) => {
                   return <SingleAssessment 
                   {...values} 
                   key={values._id}
-                  takenTests={assessment?.review?.[index]}
+                  takenTests={assessment?.review || []}
                   analysisId={currentAssessmentAnalysis}
                   />
                 })

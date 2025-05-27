@@ -7,6 +7,7 @@ import {
   Routes,
   useSearchParams
 } from 'react-router-dom'
+import {ScrollToTop} from './helpers';
 import {verifyUser} from './slices/authSlice';
 import {getProfile} from './slices/userSlice';
 import { useDispatch, useSelector } from 'react-redux'
@@ -35,6 +36,7 @@ const App = () => {
 
   return (
     <Wrapper>
+      <ScrollToTop/>
       <HeaderLarge/>
       <HeaderSmall/>
       <NavMenu/>

@@ -12,6 +12,8 @@ import { AiOutlineClose } from "react-icons/ai";
 import { FaFileAlt } from "react-icons/fa";
 import { FaEye, FaEyeSlash} from "react-icons/fa";
 import { uploadFile, handleSelectedInput, removeSelectedFile} from '../../slices/uploadSlice';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import {Loader, AlertError} from '../../helpers';
 
 const DoctorRegister = () => {
@@ -159,7 +161,7 @@ const DoctorRegister = () => {
 
         {/* Date of Birth */}
         <label htmlFor="Dateofbirth">
-          <input
+          {/* <input
             type="date"
             placeholder="Date of birth"
             value={dateOfBirth ? new Date(dateOfBirth).toISOString().split('T')[0] : ''}
@@ -176,6 +178,23 @@ const DoctorRegister = () => {
                 })
               )
             }
+          /> */}
+          <DatePicker
+            className='date_input'
+            selected={dateOfBirth ? new Date(dateOfBirth) : null}
+            onChange={(date) =>
+              dispatch(fillSignupInputs({
+                  dateOfBirth: date.toISOString().split('T')[0],
+                  firstname,
+                  lastname,
+                  email,
+                  password,
+                  role,
+                  governmentIssuedId,
+                }))
+            }
+            placeholderText="Date of birth"
+            dateFormat="yyyy-MM-dd"
           />
         </label>
 
@@ -353,6 +372,11 @@ const Wrapper = styled.div`
   label {
     width: 100%;
     margin-bottom: 1.5rem;
+
+    
+    >* {
+      width: 100%;
+    }
 
   }
 

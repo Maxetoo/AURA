@@ -30,7 +30,6 @@ const HeroSection = () => {
               </div>
             </div>
             <img src={comforting} alt="" className='illustration'
-            lazyLoad="eager"
             />
         </div>
     </Wrapper>

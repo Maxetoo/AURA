@@ -41,7 +41,9 @@ const Wrapper = styled.div`
     align-items: center;
 }
 
+
 button {
+    color: var(--stroke-color);
     width: 100%;
     min-height: 60px;
     padding: 1rem;
@@ -62,7 +64,7 @@ button {
 .selection-indicator {
     height: 30px;
     width: 30px;
-    border: solid;
+    border: solid 1px var(--stroke-color);
     border-radius: 50%;
 }
 

@@ -107,7 +107,7 @@ const TherapyPage = () => {
                 </strong>
               </p>
               <div className="btn_container">
-                <Link to="/symptomChecker">
+                <Link to="/assessment">
                   <button type="button">Complete Assessments</button>
                 </Link>
               </div>

@@ -5,6 +5,9 @@ import { useDispatch, useSelector } from 'react-redux'
 import {togglePasswordVisibility, fillSignupInputs, signup} from '../../slices/authSlice';
 import {AlertError} from '../../helpers';
 import { FaEye, FaEyeSlash} from "react-icons/fa";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import {Loader} from '../../helpers';
 
 
 
@@ -94,25 +97,32 @@ const PatientRegister = () => {
               </div>
         </label>
          <label htmlFor="Dateofbirth">
-            <input type="date" 
-            placeholder='Date of birth'
-             value={dateOfBirth ? new Date(dateOfBirth).toISOString().split('T')[0] : ''}
-            onChange={(e) => dispatch(fillSignupInputs({
-              dateOfBirth: e.target.value,
-              lastname,
-              email,
-              password,
-              firstname,
-              role
-            }))}
+            <DatePicker
+              className='date_input'
+              selected={dateOfBirth ? new Date(dateOfBirth) : null}
+              onChange={(date) =>
+                dispatch(fillSignupInputs({
+                  dateOfBirth: date.toISOString().split('T')[0],
+                  firstname,
+                  lastname,
+                  email,
+                  password,
+                  role,
+                }))
+              }
+              placeholderText="Date of birth"
+              dateFormat="yyyy-MM-dd"
             />
+
         </label>
 
         <div className="alert_message_container">
             {signupError && <AlertError message={signupErrorMessage}/>}
         </div>
       
-        <button type="button"  className={`${signupLoad ? 'btn_load' : ''}`} onClick={() => dispatch(signup({firstname,
+        <button type="button"  
+        className={`${signupLoad ? 'btn_load' : ''}`} 
+        onClick={() => dispatch(signup({firstname,
         lastname,
         email,
         password,
@@ -148,6 +158,10 @@ const Wrapper = styled.div`
     width: 100%;
     margin-bottom: 1.5rem;
 
+    >* {
+      width: 100%;
+    }
+
   }
 
   h4 {
@@ -164,6 +178,12 @@ const Wrapper = styled.div`
     font-size: 1em;
     outline: none;
   }
+
+  .date_input {
+    height: 60px;
+    border: solid 1.5px var(--stroke-color);
+  }
+
 
   input[type="date"] {
   appearance: none;

@@ -21,7 +21,6 @@ const SingleAssessment = ({test, reason, analysisId, takenTests}) => {
           const payload = resultAction.payload;
          if (generateQuestions.fulfilled.match(resultAction)) {
           if (payload.status === 'success') {
-              // navigate(`/assessment/${analysisId}`);
               navigate(`${code ? `/assessment` : `/assessment/${analysisId}`}`)
           }
           
@@ -30,17 +29,21 @@ const SingleAssessment = ({test, reason, analysisId, takenTests}) => {
         console.error('Failed analyse symptoms:', error);
       }
     }
-  
+    
+    const findTakenTest = takenTests?.find((item) => item.testCode === test);
+
+
+
   return (
     <Wrapper>
         <h4>{test}</h4>
         <p>{reason}</p>
         <button type='button' 
+        disabled={findTakenTest?.testCode === test}
         onClick={() => handleGenerateQuestions(takenTests?.testCode)}
-        className={`${(isLoading && selectedAssessment === test) ? 'btn_load' : ''}
-        `}
-        style={{opacity: `${takenTests?.testCode === test ? '0.7' : '1'}`}}
-        >{takenTests?.testCode === test ? 'Assessment Taken' : 'Take Assessment'}</button>
+        
+        style={{opacity: `${findTakenTest?.testCode === test ? '0.7' : '1'}`}}
+        >{isLoading && selectedAssessment === test ? 'Loading...' : findTakenTest?.testCode === test ? 'Assessment Taken' : 'Take Assessment'}</button>
     </Wrapper>
   )
 }
@@ -82,7 +85,7 @@ const Wrapper = styled.div`
     }
 
     .btn_load {
-      opacity: 0.8;
+      opacity: 0.6;
     }
     
 `

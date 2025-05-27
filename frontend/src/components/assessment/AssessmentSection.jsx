@@ -21,7 +21,7 @@ const AssessmentSection = () => {
     errorMessage,
     isLoading,
     generateAssesssmentError,
-    // getAssessmentLoad,
+    generateAssesssmentLoad,
     generatedAssessments,
     review,
   } = useSelector((store) => store.assessment);
@@ -135,7 +135,10 @@ const handleSubmit = async () => {
             <div className="btn_container">
               <button type="button" className="ctn-btn prev-btn" onClick={handlePreviousQuestions}>Previous</button>
               {currentQuestion === questions.length - 1 ? (
-                <button type="button" className="ctn-btn" onClick={handleSubmit}>Submit</button>
+                <button type="button" className={`ctn-btn ${generateAssesssmentLoad ? 'btn_load' : ''}`} 
+                onClick={handleSubmit}>
+                  {generateAssesssmentLoad ? 'Submitting' : 'Submit'}
+                </button>
               ) : (
                 <button type="button" className="ctn-btn" onClick={handleContinueQuestions}>Next</button>
               )}
@@ -243,7 +246,8 @@ const Wrapper = styled.div`
 
   .ctn-btn {
     height: 55px;
-    padding: 1rem 4rem;
+    width: auto;
+    padding: 1rem 2.5rem;
     display: grid;
     place-content: center;
     font-size: 1em;
@@ -257,6 +261,10 @@ const Wrapper = styled.div`
     background: none;
     border: solid 1px var(--primary-color);
     color: #000;
+  }
+
+  .btn_load {
+    opacity: 0.7;
   }
 
   @media only screen and (min-width: 992px) {

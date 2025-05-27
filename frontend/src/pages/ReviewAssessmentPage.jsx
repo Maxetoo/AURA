@@ -63,8 +63,10 @@ const ReviewAssessmentPage = () => {
                     </Link>
                     </>
                      : 
-                    <Link to={'/therapy'}>
-                    <button type='button'>
+                    <Link to={'/assessment'}>
+                    <button type='button' 
+                    // onClick={() => dispatch(getAssessments({analysisId: currentAssessmentAnalysis}))}
+                        >
                         Finish Assessment
                     </button>
                     </Link>

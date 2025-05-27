@@ -5,7 +5,7 @@ const CustomError = require('../errors')
 const authentication = (req, res, next) => {
     const authToken = req.signedCookies.token
     if (!authToken) {
-        throw new CustomError.UnauthorizedError('Not authenticated')
+        throw new CustomError.UnauthorizedError('You are not logged in')
     }
     const user = signJwt(authToken)
     req.user = user
