@@ -3,13 +3,13 @@ import styled from 'styled-components';
 import {useNavigate} from 'react-router-dom';
 import { FaArrowRightLong } from "react-icons/fa6";
 import { useDispatch, useSelector } from 'react-redux'
-import {runAnalysis, fillSymptomInput} from '../../slices/assessmentSlice';
+import {runAnalysis, fillSymptomInput, getAssessments} from '../../slices/assessmentSlice';
 import {AlertError} from '../../helpers';
 
 const MainSection = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { isLoading, isError, errorMessage, symptoms} = useSelector((store) => store.assessment)
+  const { isLoading, isError, errorMessage, symptoms, currentAssessmentAnalysis} = useSelector((store) => store.assessment)
 
   const handleAnalysis = async () => {
     const resultAction = await dispatch(runAnalysis({symptoms}));
@@ -18,6 +18,9 @@ const MainSection = () => {
         const payload = resultAction.payload;
        if (runAnalysis.fulfilled.match(resultAction)) {
         if (payload.status === 'success') {
+          if (currentAssessmentAnalysis) {
+            dispatch(getAssessments({analysisId: currentAssessmentAnalysis}))
+          }
         navigate('/assessment');
         }
         

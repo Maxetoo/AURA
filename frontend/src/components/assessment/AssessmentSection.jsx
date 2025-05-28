@@ -70,11 +70,6 @@ const handleSubmit = async () => {
 
   const resultAction = await dispatch(addAssessment({ review, analysisId: id }));
 
-  localStorage.setItem(
-    'assessmentAnalysis',
-        JSON.stringify(id)
-    );
-
   try {
     const payload = resultAction.payload;
     if (addAssessment.fulfilled.match(resultAction)) {

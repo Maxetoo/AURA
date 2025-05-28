@@ -12,13 +12,13 @@ const ReviewAssessmentPage = () => {
 
     const { currentAssessmentAnalysis, 
             getAssessmentLoad,
-            currentAssessment
+            currentAssessment,
     } = useSelector((store) => store.assessment)
 
     const {assessment, statusTitle, message} = currentAssessment || {}
     useEffect(() => {
-        if (currentAssessmentAnalysis) {
-            dispatch(getAssessments({analysisId: currentAssessmentAnalysis }))
+        if (currentAssessmentAnalysis ) {
+            dispatch(getAssessments({analysisId: currentAssessmentAnalysis}))
         }
     }, [dispatch, currentAssessmentAnalysis]);
 
@@ -65,7 +65,6 @@ const ReviewAssessmentPage = () => {
                      : 
                     <Link to={'/assessment'}>
                     <button type='button' 
-                    // onClick={() => dispatch(getAssessments({analysisId: currentAssessmentAnalysis}))}
                         >
                         Finish Assessment
                     </button>

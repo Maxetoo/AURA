@@ -219,6 +219,9 @@ const Wrapper = styled.div`
 
    .alert_message_container {
     margin-top: -2rem;
+    width: 85%;
+    line-height: 20px;
+    text-align: center;
   }
 
 
