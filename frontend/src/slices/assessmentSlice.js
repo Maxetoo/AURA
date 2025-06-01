@@ -220,7 +220,7 @@ const analysisSlice = createSlice({
                   if (!state.currentAssessmentAnalysis) {
                     localStorage.setItem(
                     'assessmentAnalysis',
-                    JSON.stringify(response?.assessment?.analysisId)
+                    JSON.stringify(state.analysisId)
                   );
                 }
             } else {

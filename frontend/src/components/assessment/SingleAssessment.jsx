@@ -5,7 +5,7 @@ import {generateQuestions} from '../../slices/assessmentSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
 
-const SingleAssessment = ({test, reason, analysisId, takenTests}) => {
+const SingleAssessment = ({test, reason, takenTests}) => {
   const dispatch = useDispatch();
   const navigate = useNavigate()
 
@@ -21,7 +21,7 @@ const SingleAssessment = ({test, reason, analysisId, takenTests}) => {
           const payload = resultAction.payload;
          if (generateQuestions.fulfilled.match(resultAction)) {
           if (payload.status === 'success') {
-              navigate(`${code ? `/assessment` : `/assessment/${analysisId}`}`)
+              navigate(`${code ? `/assessment` : `/assessment/${payload.response?.assessment?._id}`}`)
           }
           
         }
