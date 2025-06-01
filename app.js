@@ -15,6 +15,7 @@ const compression = require('compression');
 const cors = require('cors');
 
 const origin = 'https://aura-a2kd.onrender.com';
+// const origin = 'http://localhost:3000'
 
 // Express app and server initialization
 const app = express();

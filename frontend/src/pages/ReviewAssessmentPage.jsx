@@ -15,6 +15,9 @@ const ReviewAssessmentPage = () => {
             currentAssessment,
     } = useSelector((store) => store.assessment)
 
+    const {userCookie} = useSelector((store) => store.auth);
+    
+
     const {assessment, statusTitle, message} = currentAssessment || {}
     useEffect(() => {
         if (currentAssessmentAnalysis ) {
@@ -49,7 +52,15 @@ const ReviewAssessmentPage = () => {
 
             <div className="btn-container">
                 {
-                    assessment?.status !== 'in_progress' ? 
+                    !userCookie ? 
+                    <>
+                    <Link to={'/login'}>
+                        <button type='button'>
+                            Login
+                        </button>
+                    </Link>
+                    </>
+                    : assessment?.status !== 'in_progress' || !assessment?.status ? 
                     <>
                     <Link to={'/therapy'}>
                         <button type='button'>
@@ -138,6 +149,12 @@ const Wrapper = styled.div`
   @media only screen and (min-width: 600px) {
     .desc {
     width: 55%;
+  }
+  }
+
+  @media only screen and (min-width: 992px) {
+    .desc {
+    width: 45%;
   }
   }
 

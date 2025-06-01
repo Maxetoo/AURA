@@ -12,6 +12,7 @@ const runPatientAnalysis = async(req, res) => {
     // get user id  
     const user = req.user.userId || ''
 
+    
     if (!symptoms) {
         throw new CustomError.BadRequestError('Please specify symptoms');
     }
