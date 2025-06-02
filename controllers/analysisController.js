@@ -7,29 +7,119 @@ const { StatusCodes } = require('http-status-codes');
 const openai = require('../services/openAiClient');
 
 
-const runPatientAnalysis = async(req, res) => {
-    const { symptoms } = req.body;
-    // get user id  
-    const user = req.user.userId || ''
+// const runPatientAnalysis = async(req, res) => {
+//     const { symptoms } = req.body;
+//     // get user id  
+//     const user = req.user.userId || ''
 
     
-    if (!symptoms) {
-        throw new CustomError.BadRequestError('Please specify symptoms');
+//     if (!symptoms) {
+//         throw new CustomError.BadRequestError('Please specify symptoms');
+//     }
+
+//     if (!user) {
+//       throw new CustomError.BadRequestError('You are not logged in');
+//     }
+
+//     if (symptoms.length < 20) {
+//        throw new CustomError.BadRequestError('Symptoms are too short for test suggestions!');
+//     }
+
+//     let findUser = await User.findOne({_id: user})
+
+//     try {
+
+//         const prompt = `
+//       A user describes their symptoms as follows: "${symptoms}"
+
+//       Based on these symptoms, suggest the most appropriate mental health screening tests. Choose from standard assessments like PHQ-9 (Depression), GAD-7 (Anxiety), ASRS (ADHD), PCL-5 (PTSD), ISI (Insomnia), etc.
+
+//       Respond with a JSON array like this:
+//       [
+//         { "test": "PHQ-9 Depression Assessment", "reason": "Screens for depression symptoms" },
+//         { "test": "GAD-7 Anxiety Assessment", "reason": "Screens for generalized anxiety disorder" }
+//       ]
+//     `;
+
+//     const completion = await openai.chat.completions.create({
+//       model: "gpt-4o-mini",
+//       messages: [{ role: "user", content: prompt }],
+//     }); 
+
+//     const text = completion.choices[0].message.content;
+
+//     // parse response to json object
+//     const jsonMatch = text.match(/\[\s*{[\s\S]*}\s*\]/);
+
+//     if (!jsonMatch) {
+//       throw new CustomError.BadRequestError("Failed to extract valid JSON from AI response");
+//     }
+
+//     const parsedTests = JSON.parse(jsonMatch[0]);
+
+//     const userAssessmentAnalysis = await Analysis.create({
+//       user,
+//       description: symptoms,
+//       assessments: parsedTests
+//     })
+
+//     if (findUser) {
+//       findUser.recommendedTests.push(userAssessmentAnalysis._id)
+//     }
+
+//   await findUser.save()    
+
+
+//     res.status(StatusCodes.CREATED).json({ suggestedTests: userAssessmentAnalysis });
+
+//     } catch (error) {
+    
+//     res.status(500).json({ message: "AI failed to suggest tests", error });
+
+//     }
+// }
+
+const runPatientAnalysis = async (req, res) => {
+  const { symptoms } = req.body;
+  const user = req.user.userId || '';
+
+  if (!symptoms) {
+    throw new CustomError.BadRequestError('Please specify symptoms');
+  }
+
+  if (!user) {
+    throw new CustomError.BadRequestError('You are not logged in');
+  }
+
+  if (symptoms.length < 20) {
+    throw new CustomError.BadRequestError('Symptoms are too short for test suggestions!');
+  }
+
+  const findUser = await User.findOne({ _id: user });
+
+  // Step 1: Validate if symptom is actually a real symptom and not fake input
+  const validationPrompt = `
+    Someone said the following: "${symptoms}"
+
+    Does this sound like a valid mental health symptom description, or is it a test/non-serious input?
+
+    Respond with only "Valid" or "Invalid".
+  `;
+
+  try {
+    const validationResponse = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: validationPrompt }],
+    });
+
+    const validationResult = validationResponse.choices[0].message.content.trim().toLowerCase();
+
+    if (validationResult !== 'valid') {
+      throw new CustomError.BadRequestError('Symptom is not valid for test analysis.');
     }
 
-    if (!user) {
-      throw new CustomError.BadRequestError('You are not logged in');
-    }
-
-    if (symptoms.length < 20) {
-       throw new CustomError.BadRequestError('Symptoms are too short for test suggestions!');
-    }
-
-    let findUser = await User.findOne({_id: user})
-
-    try {
-
-        const prompt = `
+    // Step 2: Proceed with test suggestion logic
+    const prompt = `
       A user describes their symptoms as follows: "${symptoms}"
 
       Based on these symptoms, suggest the most appropriate mental health screening tests. Choose from standard assessments like PHQ-9 (Depression), GAD-7 (Anxiety), ASRS (ADHD), PCL-5 (PTSD), ISI (Insomnia), etc.
@@ -44,11 +134,9 @@ const runPatientAnalysis = async(req, res) => {
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],
-    }); 
+    });
 
     const text = completion.choices[0].message.content;
-
-    // parse response to json object
     const jsonMatch = text.match(/\[\s*{[\s\S]*}\s*\]/);
 
     if (!jsonMatch) {
@@ -60,24 +148,22 @@ const runPatientAnalysis = async(req, res) => {
     const userAssessmentAnalysis = await Analysis.create({
       user,
       description: symptoms,
-      assessments: parsedTests
-    })
+      assessments: parsedTests,
+    });
 
     if (findUser) {
-      findUser.recommendedTests.push(userAssessmentAnalysis._id)
+      findUser.recommendedTests.push(userAssessmentAnalysis._id);
     }
 
-  await findUser.save()    
-
+    await findUser.save();
 
     res.status(StatusCodes.CREATED).json({ suggestedTests: userAssessmentAnalysis });
 
-    } catch (error) {
-    
-    res.status(500).json({ message: "AI failed to suggest tests", error });
+  } catch (error) {
+    res.status(500).json({ message: "AI failed to suggest tests", error: error.message || error });
+  }
+};
 
-    }
-}
 
 
 

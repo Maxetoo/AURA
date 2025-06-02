@@ -60,6 +60,15 @@ const ReviewAssessmentPage = () => {
                         </button>
                     </Link>
                     </>
+                    :
+                    !assessment ? 
+                    <>
+                    <Link to={'/assessment'}>
+                        <button type='button'>
+                            Take Assessment
+                        </button>
+                    </Link>
+                    </>
                     : assessment?.status !== 'in_progress' || !assessment?.status ? 
                     <>
                     <Link to={'/therapy'}>

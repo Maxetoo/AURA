@@ -11,17 +11,19 @@ const SingleAssessment = ({test, reason, takenTests}) => {
 
   const {
         isLoading,
-        selectedAssessment
+        selectedAssessment,
     } = useSelector((store) => store.assessment)
 
   const handleGenerateQuestions = async (code) => {
       const resultAction = await dispatch(generateQuestions({test, reason}));
+      const getCurrentAnalysis = JSON.parse(localStorage.getItem("assessmentAnalysis"))
+
   
       try {
           const payload = resultAction.payload;
          if (generateQuestions.fulfilled.match(resultAction)) {
           if (payload.status === 'success') {
-              navigate(`${code ? `/assessment` : `/assessment/${payload.response?.assessment?._id}`}`)
+              navigate(`${code ? `/assessment` : `/assessment/${getCurrentAnalysis}`}`)
           }
           
         }

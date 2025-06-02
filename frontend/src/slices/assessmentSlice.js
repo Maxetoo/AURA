@@ -33,7 +33,7 @@ const initialState = {
 
 export const runAnalysis = createAsyncThunk(
     'actions/runAnalysis',
-    async (payload) => {
+    async (payload, thunkApi) => {
         const {symptoms} = payload
 
         try {
@@ -46,6 +46,7 @@ export const runAnalysis = createAsyncThunk(
             withCredentials: true,
           }
         )
+        thunkApi.dispatch(getAssessments({analysisId: resp.data?.suggestedTests?._id}))
         return { response: resp.data, status: 'success' }
       } catch (error) {
         return {
@@ -197,6 +198,7 @@ const analysisSlice = createSlice({
             if (status === 'success') {
                 state.isLoading = false
                 state.generatedAssessments = response.assessment
+                state.analysisId = response.assessment?._id
             } else {
                 state.isLoading = false
                 state.isError = true
@@ -217,12 +219,12 @@ const analysisSlice = createSlice({
             if (status === 'success') {
                 state.getAssessmentLoad = false
                 state.currentAssessment = response
-                  if (!state.currentAssessmentAnalysis) {
+                  // if (!state.currentAssessmentAnalysis) {
                     localStorage.setItem(
                     'assessmentAnalysis',
                     JSON.stringify(state.analysisId)
                   );
-                }
+                // }
             } else {
                 state.getAssessmentLoad = false
                 state.getAssessmentError = true

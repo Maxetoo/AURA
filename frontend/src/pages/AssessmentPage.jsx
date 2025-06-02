@@ -31,11 +31,21 @@ const AssessmentPage = () => {
   useEffect(() => {
     const defaultAssessmentId = user?.recommendedTests?.[0]?._id;
     const analysisId = currentAssessmentAnalysis || defaultAssessmentId;
+    const getCurrentAnalysis = localStorage.getItem("assessmentAnalysis");
 
     if (analysisId) {
       dispatch(getAssessments({ analysisId }));
+
+      if (!getCurrentAnalysis) {
+          localStorage.setItem(
+          'assessmentAnalysis',
+            JSON.stringify(analysisId)
+        );
+      }
     }
+
   }, [dispatch, currentAssessmentAnalysis, user]);
+
 
   const { assessment } = currentAssessment || {};
 
@@ -57,7 +67,7 @@ const AssessmentPage = () => {
                 <SingleAssessment
                   {...values}
                   key={values._id}
-                  takenTests={(assessment && assessment.review) || []}
+                  takenTests={(assessment && assessment?.review) || []}
                   analysisId={currentAssessmentAnalysis}
                 />
               )

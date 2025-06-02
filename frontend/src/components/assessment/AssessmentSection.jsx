@@ -24,6 +24,7 @@ const AssessmentSection = () => {
     generateAssesssmentLoad,
     generatedAssessments,
     review,
+    // currentAssessmentAnalysis
   } = useSelector((store) => store.assessment);
 
   useEffect(() => {
@@ -68,13 +69,16 @@ const handleSubmit = async () => {
   const answersArray = Object.values(selectedOptions); 
   await dispatch(updateReview({ answers: answersArray, testCode: test }));
 
-  const resultAction = await dispatch(addAssessment({ review, analysisId: id }));
+
+  const resultAction = await dispatch(addAssessment({ review, analysisId: id}));
 
   try {
     const payload = resultAction.payload;
     if (addAssessment.fulfilled.match(resultAction)) {
       if (payload.status === 'success') {
-        dispatch(getAssessments({analysisId: id}))
+        dispatch(getAssessments({analysisId: 
+          id
+        }))
         navigate(`/review`);
       }
     }
