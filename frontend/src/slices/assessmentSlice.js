@@ -175,7 +175,7 @@ const analysisSlice = createSlice({
                 state.analysisId = response.suggestedTests?._id
                 localStorage.setItem(
                 'assessmentAnalysis',
-                    JSON.stringify(state.analysisId)
+                    JSON.stringify(response.suggestedTests?._id)
                 );
                 state.symptoms = ''
             } else {
@@ -219,12 +219,6 @@ const analysisSlice = createSlice({
             if (status === 'success') {
                 state.getAssessmentLoad = false
                 state.currentAssessment = response
-                  // if (!state.currentAssessmentAnalysis) {
-                    localStorage.setItem(
-                    'assessmentAnalysis',
-                    JSON.stringify(state.analysisId)
-                  );
-                // }
             } else {
                 state.getAssessmentLoad = false
                 state.getAssessmentError = true

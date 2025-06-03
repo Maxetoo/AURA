@@ -28,23 +28,35 @@ const AssessmentPage = () => {
 
   const activeAssessments = assessments?.length > 0 ? assessments : selectedAssessments;
 
-  useEffect(() => {
-    const defaultAssessmentId = user?.recommendedTests?.[0]?._id;
-    const analysisId = currentAssessmentAnalysis || defaultAssessmentId;
-    const getCurrentAnalysis = localStorage.getItem("assessmentAnalysis");
+  const defaultAssessmentId = user?.recommendedTests?.[0]?._id;
+  const analysisId = currentAssessmentAnalysis ? currentAssessmentAnalysis : defaultAssessmentId;
 
-    if (analysisId) {
-      dispatch(getAssessments({ analysisId }));
 
-      if (!getCurrentAnalysis) {
-          localStorage.setItem(
-          'assessmentAnalysis',
-            JSON.stringify(analysisId)
-        );
-      }
-    }
 
-  }, [dispatch, currentAssessmentAnalysis, user]);
+ // ...existing code...
+useEffect(() => {
+  const getCurrentAnalysis = localStorage.getItem("assessmentAnalysis");
+
+  if (!getCurrentAnalysis) {
+    localStorage.setItem(
+      'assessmentAnalysis',
+      analysisId
+    );
+  }
+
+  if (analysisId) {
+    dispatch(getAssessments({ analysisId }));
+  }
+}, [dispatch, analysisId, user, currentAssessmentAnalysis]);
+
+
+useEffect(() => {
+  if (getAssessmentLoad && analysisId) {
+    
+    dispatch(getAssessments({ analysisId }));
+  }
+}, [getAssessmentLoad, currentAssessment, analysisId, dispatch]);
+
 
 
   const { assessment } = currentAssessment || {};
