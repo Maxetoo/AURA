@@ -1,5 +1,5 @@
 const axios = require('axios');
-const Tesseract = require('tesseract.js');
+const Tesseract = require('tesseract.js')
 const pdf = require('pdf-parse');
 
 const downloadFile = async (url) => {
