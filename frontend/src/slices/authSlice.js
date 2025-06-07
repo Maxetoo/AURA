@@ -151,6 +151,7 @@ export const login = createAsyncThunk(
           }
         )
         thunkApi.dispatch(getProfile())
+        window.location.reload()
         return { response: resp, status: 'success' }
       } catch (error) {
         return {

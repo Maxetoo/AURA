@@ -132,10 +132,19 @@ verificationToken: {
     type: String,
 },
 
+embedding: {
+  type: [Number], 
+  default: []
+},
+
 subscriptionStatus: {
     type: String,
     enum: ["none", "active", "expired"],
     default: "none",
+},
+
+activeAssessmentId: {
+    type: mongoose.Schema.Types.ObjectId,
 },
 
 recommendedTests: [{

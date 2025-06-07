@@ -9,6 +9,7 @@ import AssessmentPage from './AssessmentPage';
 import UserConfirmationPage from './UserConfirmationPage';
 import ReviewAssessmentPage from './ReviewAssessmentPage';
 import TherapyPage from './TherapyPage';
+import MacthedTherapistPage from './MatchedTherapistPage'
 
 
 export {
@@ -22,5 +23,6 @@ export {
     SingleAssessmentPage,
     UserConfirmationPage,
     ReviewAssessmentPage,
-    TherapyPage
+    TherapyPage,
+    MacthedTherapistPage
 }

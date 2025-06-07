@@ -1,16 +1,16 @@
 import React, {useEffect} from 'react'
 import styled from 'styled-components';
 import {useSelector, useDispatch} from 'react-redux';
-import {Link, Navigate, useLocation} from 'react-router-dom';
+import {Link, Navigate} from 'react-router-dom';
 import {getAssessments} from '../slices/assessmentSlice';
 import {Loader} from '../helpers';
 
 const ReviewAssessmentPage = () => {
     const dispatch = useDispatch();
-    const location = useLocation();
+    // const location = useLocation();
 
 
-    const { currentAssessmentAnalysis, 
+    const {  
             getAssessmentLoad,
             currentAssessment,
     } = useSelector((store) => store.assessment)
@@ -18,17 +18,15 @@ const ReviewAssessmentPage = () => {
     const {userCookie} = useSelector((store) => store.auth);
     
 
-    const {assessment, statusTitle, message} = currentAssessment || {}
-    useEffect(() => {
-        if (currentAssessmentAnalysis ) {
-            dispatch(getAssessments({analysisId: currentAssessmentAnalysis}))
-        }
-    }, [dispatch, currentAssessmentAnalysis]);
+    const {assessment, statusTitle, message} = currentAssessment || {};
 
-    
-    if (!currentAssessmentAnalysis) {
-        return <Navigate to="/symptomChecker" state={{ from: location }} replace />
-      }
+    const analysisId = assessment?.analysisId;
+
+    useEffect(() => {
+        if (analysisId) {
+            dispatch(getAssessments({ analysisId }));
+        }
+    }, [dispatch, analysisId]);
 
 
   return (

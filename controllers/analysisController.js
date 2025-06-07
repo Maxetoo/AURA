@@ -7,6 +7,12 @@ const { StatusCodes } = require('http-status-codes');
 const openai = require('../services/openAiClient');
 
 
+const getEmbedding = async (...args) => {
+const { getEmbedding } = await import('../services/transformer.mjs');
+  return getEmbedding(...args);
+};
+
+
 const runPatientAnalysis = async (req, res) => {
   const { symptoms } = req.body;
   const user = req.user.userId || '';
@@ -23,7 +29,7 @@ const runPatientAnalysis = async (req, res) => {
     throw new CustomError.BadRequestError('Symptoms are too short for test suggestions!');
   }
 
-  const findUser = await User.findOne({ _id: user });
+  const findUser = await User.findById(user);
 
   // Step 1: Validate if symptom is actually a real symptom and not fake input
   const validationPrompt = `
@@ -46,7 +52,6 @@ const runPatientAnalysis = async (req, res) => {
       throw new CustomError.BadRequestError('Symptom is not valid for test analysis.');
     }
 
-    // Step 2: Proceed with test suggestion logic
     const prompt = `
       A user describes their symptoms as follows: "${symptoms}"
 
@@ -80,10 +85,15 @@ const runPatientAnalysis = async (req, res) => {
     });
 
     if (findUser) {
+      // push the recommended tests 
       findUser.recommendedTests.push(userAssessmentAnalysis._id);
+      // push active recommended test id
+      findUser.activeAssessmentId = userAssessmentAnalysis._id
     }
 
     await findUser.save();
+
+    console.log(user.activeAssessmentId)
 
     res.status(StatusCodes.CREATED).json({ suggestedTests: userAssessmentAnalysis });
 
@@ -195,42 +205,62 @@ const generateAssessmentQuestions = async (req, res) => {
 
 
 const getMyAssessments = async(req, res) => {
-   const user = req.user.userId
-   let message;
+    const user = req.user.userId
+    let message;
  
     if (!user) {
       throw new CustomError.BadRequestError('You are not logged in');
     }
 
+    // find user
+    const findUser = await User.findById(user);
+
+    if (!findUser) {
+      throw new CustomError.NotFoundError('User not found');
+    }
+
     const { id: analysisId } = req.params;
 
-     if (!analysisId) {
+    // Determine which analysisId to use
+    const targetAnalysisId = findUser.activeAssessmentId || analysisId;
+
+
+     if (!targetAnalysisId) {
       throw new CustomError.BadRequestError('Analysis report should be specified');
     }
 
-    const analysis = await Analysis.findOne({user, _id: analysisId})
 
-    if (!analysis) {
-      throw new CustomError.BadRequestError('No record for assessment');
-    }
+    // find the analysis report
+    const analysis = await Analysis.findOne({user, _id: targetAnalysisId})
 
-    const assessment = await Assessment.findOne({
-      user,
-      analysisId
-    });
+
+    // Find assessment
+    const assessment = await Assessment.findOne({ user, analysisId: targetAnalysisId })
+    // .select('-embedding');
 
 
     // filter remaining assessments (with same testCode)
     const retrievedRemainingAssessments = analysis.assessments?.filter(
-      (value) => !assessment.review.find(val => val.testCode === value.test)
-    ).map(val => val.test).toString()
+      (value) => !assessment?.review?.find(val => val.testCode === value.test)
+    ).map(val => val.test).join(', '); 
 
-    message = retrievedRemainingAssessments ? `Please take the remaining assessments: ${retrievedRemainingAssessments}` : 'You have successfully completed all your assessments'
 
-    const statusTitle = assessment.status === 'in_progress' ? 'Almost there!' : 'Assessment Complete'
+
+    message = !retrievedRemainingAssessments && assessment?.status === 'in_progress'
+      ? `Please complete all assessments`
+      : retrievedRemainingAssessments
+      ? `Please take the remaining assessments: ${retrievedRemainingAssessments}`
+      : 'You have completed all assessments'; 
+
+      const statusTitle = assessment?.status === 'in_progress'
+        ? 'Almost there!'
+        : assessment?.status === 'completed'
+        ? 'Assessment Complete'
+        : 'Assessment In Progress';
 
     res.status(StatusCodes.OK).json({
       assessment,
+      // analysis,
       statusTitle,
       message
     })
@@ -245,10 +275,19 @@ const addUserAssessment = async(req, res) => {
       throw new CustomError.BadRequestError('You are not logged in');
     }
 
+    // find user
+    const findUser = await User.findById(user);
+
+    if (!findUser) {
+      throw new CustomError.NotFoundError('User not found');
+    }
 
     const {analysisId, review = {}} = req.body;
 
-    if (!analysisId) {
+     // Determine which analysisId to use
+    const targetAnalysisId = findUser.activeAssessmentId || analysisId;
+
+    if (!targetAnalysisId) {
       throw new CustomError.BadRequestError('Analysis report should be specified');
     }
 
@@ -268,19 +307,16 @@ const addUserAssessment = async(req, res) => {
       throw new CustomError.BadRequestError('Could not get questions');
     }
 
-    if (assessmentQuestions.questions.length !== answers.length) {
-       throw new CustomError.BadRequestError('Please answer all the questions');
-    }
+    // find analysis 
+    const analysis = await Analysis.findOne({user, _id: targetAnalysisId});
 
-    const userAssessments = await Analysis.findOne({user, _id: analysisId})
-
-    if (!userAssessments) {
+    if (!analysis) {
       throw new CustomError.BadRequestError('No record for assessment');
     }
 
     let assessment = await Assessment.findOne({
       user,
-      analysisId
+      analysisId: targetAnalysisId
     });
 
 
@@ -288,7 +324,7 @@ const addUserAssessment = async(req, res) => {
       // first time answering 
       assessment = new Assessment({
         user,
-        analysisId,
+        analysisId: targetAnalysisId,
         review: [{
           testCode,
           answers
@@ -297,7 +333,7 @@ const addUserAssessment = async(req, res) => {
       })
 
     } else {
-      // find for existing test code
+
       const reviewItem = assessment.review.find(val => val.testCode === testCode);
 
       if (!reviewItem) {
@@ -306,12 +342,21 @@ const addUserAssessment = async(req, res) => {
           answers
         })
       } else {
-        reviewItem.answers.push(...answers)
+        // Overwrite previous answers instead of pushing
+        reviewItem.answers = answers;
       }
 
-      if (assessment.review.length === userAssessments.assessments.length) {
-        assessment.status = 'completed'
-      } 
+      if (assessment.review.length === analysis.assessments.length) {
+          assessment.status = 'completed';
+
+          const desiredProfile = `
+              Patient is seeking help for:
+              Symptoms: ${analysis.description}
+              Needs therapist experienced in: ${analysis.assessments.map(val => val.test).join(', ')}
+          `;
+          const embedding = await getEmbedding(desiredProfile);
+          assessment.embedding = Array.from(embedding);
+      }
     }   
  
     await assessment.save();
@@ -319,31 +364,79 @@ const addUserAssessment = async(req, res) => {
     res.status(StatusCodes.OK).json({message: 'Assessment added successfully!'})
 }
 
-const matchTherapist = async(req, res) => {
-    const therapists = await User.find({
-      role: 'therapist',
-      isVerified: true
-    }).select('firstname lastname email governmentIssuedId certifications resume')
 
-    if (therapists) {
-      throw new CustomError.BadRequestError('No therapist available at the moment!')
+const matchTherapist = async (req, res) => {
+  const userId = req.user.userId;
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 5;
+
+  const user = await User.findById(userId);
+
+  if (!user?.activeAssessmentId) {
+    throw new CustomError.BadRequestError('Missing active assessment');
+  }
+
+  const assessment = await Assessment.findOne({
+    user: userId,
+    analysisId: user.activeAssessmentId
+  });
+
+  if (!assessment || assessment.status !== 'completed') {
+    throw new CustomError.BadRequestError('Complete the assessment first');
+  }
+
+  if (!assessment.embedding?.length) {
+    throw new CustomError.BadRequestError('No assessment embedding found');
+  }
+
+
+  const therapists = await User.aggregate([
+  {
+    $vectorSearch: {
+      index: 'vector_index_search',
+      queryVector: assessment.embedding,
+      path: 'embedding',
+      numCandidates: 100,
+      limit: 100,
+      filter: {
+        role: 'therapist',
+        isVerified: true
+      }
     }
-
-  therapists.map(t => {
-    return {
-      id: t._id,
-      content: `
-        Name: ${t.firstname} ${t.lastname}
-        Email: ${t.email}
-        ID: ${t.governmentIssuedId}
-        Certifications: ${t.certifications.join(', ')} 
-        Qualifications: ${t.resume.join(', ')}
-      `
+  },
+  {
+    $project: {
+      firstname: 1,
+      lastname: 1,
+      email: 1,
+      resume: 1,
+      certifications: 1,
+      profilePhoto: 1,
+      score: { $meta: 'vectorSearchScore' }
     }
-});
+  }, {
+    $sort: { score: -1 }
+  },
+  {
+    $skip: (page - 1) * limit
+  },
+  {
+    $limit: limit
+  }
+]);
 
-
+if (therapists.length === 0) {
+  throw new CustomError.NotFoundError('No therapists found matching your assessments');
 }
+
+
+res.status(StatusCodes.OK).json({
+  success: true,
+  therapists,
+  pagination: { page, limit }
+});
+};
+
 
 
 
@@ -354,7 +447,8 @@ module.exports = {
     getAllPatientAnalysis,
     generateAssessmentQuestions,
     addUserAssessment,
-    getMyAssessments
+    getMyAssessments,
+    matchTherapist
 }
 
 

@@ -7,14 +7,14 @@ import { useSelector } from 'react-redux'
 const HeaderLarge = () => {
   const { userCookie } = useSelector((store) => store.auth)
   const { user } = useSelector((store) => store.user)
-  const { currentAssessmentAnalysis } = useSelector((store) => store.assessment)
+  const { currentAssessment } = useSelector((store) => store.assessment)
   const recommendedTests = user?.recommendedTests || []
 
   let newMenuList = []
 
   if (recommendedTests.length === 0 || Object.keys(user).length === 0) {
     newMenuList = menuList.filter(val => val.route !== '/assessment')
-  } else if (!currentAssessmentAnalysis) {
+  } else if (!currentAssessment || Object.keys(currentAssessment).length === 0) {
     newMenuList = menuList.filter(val => val.route !== '/review')
   } else {
     newMenuList = menuList

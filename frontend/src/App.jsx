@@ -1,6 +1,6 @@
 import React, {useEffect} from 'react'
 import styled from 'styled-components';
-import {HomePage, AboutPage, ErrorPage, DiagnosisPage, LoginPage, RegisterPage, AssessmentPage, SingleAssessmentPage, UserConfirmationPage, ReviewAssessmentPage, TherapyPage} from './pages';
+import {HomePage, AboutPage, ErrorPage, DiagnosisPage, LoginPage, RegisterPage, AssessmentPage, SingleAssessmentPage, UserConfirmationPage, ReviewAssessmentPage, TherapyPage, MacthedTherapistPage} from './pages';
 import {HeaderLarge, HeaderSmall, Footer, NavMenu} from './components/global';
 import {
   Route,
@@ -11,6 +11,7 @@ import {ScrollToTop} from './helpers';
 import {verifyUser} from './slices/authSlice';
 import {getProfile} from './slices/userSlice';
 import { useDispatch, useSelector } from 'react-redux'
+import MatchedTherapistPage from './pages/MatchedTherapistPage';
 
 
 const App = () => {
@@ -51,6 +52,7 @@ const App = () => {
           {/* Therapy */}
           <Route path="/review" element={<ReviewAssessmentPage />} />
            <Route path="/therapy" element={<TherapyPage />} />
+            <Route path="/matched-therapist" element={<MatchedTherapistPage />} />
         <Route path="/assessment/:id" element={<SingleAssessmentPage />} />
         <Route path="*" element={<ErrorPage />} />
       </Routes>

@@ -4,6 +4,16 @@ const { createCookies } = require('../services/helpers');
 const { v4: uuidv4 } = require('uuid');
 const { StatusCodes } = require('http-status-codes');
 const { resetPasswordEmail, userVerificationEmail, therapistVerificationEmail} = require('../emailTemplates')
+const getEmbedding = async (...args) => {
+const { getEmbedding } = await import('../services/transformer.mjs');
+  return getEmbedding(...args);
+};
+const {
+  downloadFile,
+  extractTextFromImage,
+  extractTextFromPDF,
+} = require('../services/services');
+
 
 const signup = async (req, res) => {
     const {
@@ -52,14 +62,42 @@ const signup = async (req, res) => {
         isAdmin: makeAdmin,
         verificationToken,
         dateOfBirth
-    };
+    }; 
 
     if (role === 'therapist') {
+        let certificationsText = '';
+        const certFiles = Array.isArray(certifications) ? certifications : [certifications];
+
+        for (const certUrl of certFiles) {
+            if (!certUrl) continue;
+            try {
+                const fileBuffer = await downloadFile(certUrl);
+                if (certUrl.toLowerCase().endsWith('.pdf')) {
+                    certificationsText += '\n' + await extractTextFromPDF(fileBuffer);
+                } else {
+                    certificationsText += '\n' + await extractTextFromImage(fileBuffer);
+                    console.log(certificationsText);
+                }
+            } catch (err) {
+                console.error(`Failed to extract text from certification: ${certUrl}`, err.message);
+            }
+        }
+
+        // Create a profile summary for embedding
+        const therapistProfile = `
+            Therapist Ready to treat a Patient having Profile:
+            Name: ${firstname} ${lastname}
+            Areas of Expertise: ${certificationsText}
+        `;
+
+        const embedding = await getEmbedding(therapistProfile);
+
         Object.assign(userData, {
             governmentIssuedId,
             certifications,
             resume,
-            profilePhoto
+            profilePhoto,
+            embedding: Array.from(embedding)
         });
     }
 

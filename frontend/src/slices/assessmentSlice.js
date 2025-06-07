@@ -3,18 +3,14 @@ import axios from 'axios'
 import {URL} from '../paths/url'
 
 
-const storedAssessmentAnalysis = localStorage.getItem('assessmentAnalysis')
-    ? JSON.parse(localStorage.getItem('assessmentAnalysis'))
-    : ''
-
-
-
 const initialState = {
     errorMessage: '',
     isError: false,
     isLoading: false,
     generateAssesssmentLoad: false,
     generateAssesssmentError: false,
+    matchTherapistLoad: false,
+    matchTherapistError: false,
     getAssessmentLoad: false,
     getAssessmentError: false,
     symptoms: '',
@@ -27,8 +23,9 @@ const initialState = {
     },
     analysisId: '',
     selectedAssessment: '',
-    currentAssessmentAnalysis: storedAssessmentAnalysis,
-    currentAssessment: {}
+    currentAssessmentAnalysis: '',
+    currentAssessment: {},
+    therapistMatches: {}
 }
 
 export const runAnalysis = createAsyncThunk(
@@ -110,7 +107,7 @@ export const runAnalysis = createAsyncThunk(
 
   export const addAssessment = createAsyncThunk(
     'actions/addAssessment',
-    async (payload) => {
+    async (payload, thunkApi) => {
         const {analysisId, review} = payload
         try {
         const resp = await axios.post(
@@ -123,7 +120,29 @@ export const runAnalysis = createAsyncThunk(
             withCredentials: true,
           }
         )
-        // thunkApi.dispatch(getAssessments({analysisId}))
+        thunkApi.dispatch(getAssessments({analysisId}))
+        return { response: resp.data, status: 'success' }
+      } catch (error) {
+        return {
+          response: error.response.data,
+          status: 'error',
+          code: error.response.status,
+        }
+      }
+    }
+  )
+
+  export const matchTherapist = createAsyncThunk(
+    'actions/matchTherapist',
+    async () => {
+
+      try {
+        const resp = await axios.get(
+          `${URL}/api/v1/analysis/match-therapist`, 
+          {
+            withCredentials: true,
+          }
+        )
         return { response: resp.data, status: 'success' }
       } catch (error) {
         return {
@@ -151,14 +170,6 @@ const analysisSlice = createSlice({
       handleSelectAssessment: (state, action) => {
         state.selectedAssessment = action.payload
       },
-      reloadAssessment: (state, action) => {
-        const {analysisId} = action.payload
-        state.currentAssessmentAnalysis = analysisId
-        localStorage.setItem(
-          'assessmentAnalysis',
-          JSON.stringify(analysisId)
-        );
-      }
     },
     extraReducers(builder) {
         builder
@@ -173,10 +184,6 @@ const analysisSlice = createSlice({
                 state.suggestedTests = response.suggestedTests || {}
                 state.assessments = response.suggestedTests?.assessments || []
                 state.analysisId = response.suggestedTests?._id
-                localStorage.setItem(
-                'assessmentAnalysis',
-                    JSON.stringify(response.suggestedTests?._id)
-                );
                 state.symptoms = ''
             } else {
                 state.isLoading = false
@@ -247,6 +254,26 @@ const analysisSlice = createSlice({
         .addCase(addAssessment.rejected, (state) => {
           state.generateAssesssmentLoad = false
           state.generateAssesssmentError = true
+          state.errorMessage = 'Network error'
+        })
+        .addCase(matchTherapist.pending, (state) => {
+          state.matchTherapistLoad = true
+          state.matchTherapistError = false
+        })
+        .addCase(matchTherapist.fulfilled, (state, action) => {
+            const { status, response} = action.payload
+            if (status === 'success') {
+                state.matchTherapistLoad = false
+                state.therapistMatches = response   
+            } else {
+                state.matchTherapistLoad = false
+                state.matchTherapistError = true
+                state.errorMessage = response.message                
+            }
+        })
+        .addCase(matchTherapist.rejected, (state) => {
+          state.matchTherapistLoad = false
+          state.matchTherapistError = true
           state.errorMessage = 'Network error'
         })
     }

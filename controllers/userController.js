@@ -4,7 +4,8 @@ const { StatusCodes } = require('http-status-codes')
 
 const myProfile = async(req, res) => {
     const {userId} = req?.user || {}
-    const user = await User.findOne({_id: userId}).select('-password').populate({path: 'recommendedTests', select: 'assessments _id'})
+    const user = await User.findOne({_id: userId}).select('-password -embedding').populate({path: 'recommendedTests', select: 'assessments _id'})
+
     if (!user) {
         throw new CustomError.BadRequestError('Not authenticated') 
     }
@@ -75,7 +76,7 @@ const getSingleUser = async(req, res) => {
         throw new CustomError.NotFoundError('No id found')
     }
 
-    const user = await User.findOne({_id: id}).populate({path: 'recommendedTests', select: 'assessments _id'})
+    const user = await User.findOne({_id: id}).populate({path: 'recommendedTests', select: 'assessments _id -embedding -password'})
 
 
     res.status(StatusCodes.OK).json({ user})
@@ -99,7 +100,7 @@ const updateUser = async(req, res) => {
         throw new CustomError.BadRequestError('No user found')
     }
 
-    res.status(StatusCodes.OK).json({ user })
+    res.status(StatusCodes.OK).json({ message: 'User updated succesfully' })
 }
 
 module.exports = {

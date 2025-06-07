@@ -1,9 +1,9 @@
 import React, {useEffect} from 'react'
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate} from 'react-router-dom';
 import {howMatchWorksData} from '../data/howMatchWorksData';
 import {toggleShowHowMatchWorks} from '../slices/eventSlice'
-import {getAssessments} from '../slices/assessmentSlice'
+import {getAssessments, matchTherapist} from '../slices/assessmentSlice'
 import { FaCaretDown, FaCaretUp} from "react-icons/fa6";
 import { useDispatch, useSelector} from 'react-redux';
 import {Loader} from '../helpers';
@@ -12,12 +12,15 @@ import {Loader} from '../helpers';
 
 const TherapyPage = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const {showHowMatchWorks} = useSelector((store) => store.event);
   const {userCookie} = useSelector((store) => store.auth);
 
   const { currentAssessmentAnalysis, 
               getAssessmentLoad,
-              currentAssessment
+              currentAssessment,
+              matchTherapistLoad,
+              matchTherapistError,
       } = useSelector((store) => store.assessment)
   
       const {assessment, message} = currentAssessment || {}
@@ -27,6 +30,22 @@ const TherapyPage = () => {
           }
       }, [dispatch, currentAssessmentAnalysis]);
 
+      const handleFindTherapist = async() => {
+        const resultAction = await dispatch(matchTherapist())
+
+        try {
+          const payload = resultAction.payload;
+          if (matchTherapist.fulfilled.match(resultAction)) {
+            if (payload.status === 'success') {
+              dispatch(matchTherapist())
+              navigate('/matched-therapist');
+
+            }
+          } 
+        } catch (error) {
+          console.error('Failed to match therapist:', error);
+        }
+      }
 
   return (
     <Wrapper>
@@ -119,11 +138,20 @@ const TherapyPage = () => {
               </p>
               <div className="btn_container">
                 <Link to="/therapy">
-                  <button type="button">Match Therapist</button>
+                  <button type="button" onClick={handleFindTherapist} disabled={matchTherapistLoad}>
+                    {matchTherapistLoad ? 'Finding Therapist...' : 'Find Therapist'}
+                  </button>
                 </Link>
                 <Link to="/symptomChecker">
                   <button type="button" className="btn_2">Take Another Test</button>
                 </Link>
+              </div>
+              <div className="error_container">
+                {matchTherapistError && (
+                  <p className="error_message">
+                    {matchTherapistError}
+                  </p>
+                )}
               </div>
             </>
           )}
@@ -225,6 +253,11 @@ const Wrapper = styled.div`
     background: none;
     border: solid 1.5px var(--primary-color);
     color: #000;
+  }
+
+  .error_container {
+    margin-top: 2rem;
+    color: var(--error-color);
   }
 
    @media only screen and (min-width: 600px) {

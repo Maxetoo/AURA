@@ -35,6 +35,10 @@ const AssessmentSessionSchema = new mongoose.Schema({
     enum: ["in_progress", "completed", "reviewed"], 
     default: "in_progress" 
 },
+embedding: {
+  type: [Number], 
+  default: []
+},
   reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Therapist" },
   diagnosisNote: {
     type: String,

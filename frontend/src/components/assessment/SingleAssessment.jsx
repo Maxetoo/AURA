@@ -14,16 +14,18 @@ const SingleAssessment = ({test, reason, takenTests}) => {
         selectedAssessment,
     } = useSelector((store) => store.assessment)
 
+    const {
+        user,
+    } = useSelector((store) => store.user)
+
   const handleGenerateQuestions = async (code) => {
       const resultAction = await dispatch(generateQuestions({test, reason}));
-      const getCurrentAnalysis = JSON.parse(localStorage.getItem("assessmentAnalysis"))
-
   
       try {
           const payload = resultAction.payload;
          if (generateQuestions.fulfilled.match(resultAction)) {
           if (payload.status === 'success') {
-              navigate(`${code ? `/assessment` : `/assessment/${getCurrentAnalysis}`}`)
+              navigate(`${code ? `/assessment` : `/assessment/${user?.activeAssessmentId}`}`)
           }
           
         }
