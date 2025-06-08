@@ -137,6 +137,21 @@ embedding: {
   default: []
 },
 
+yearsOfExperience: {
+    type: Number,
+    required: function() {
+        return this.role === 'therapist';
+    }
+},
+
+specialties: {
+    type: [String],
+    required: function() {
+        return this.role === 'therapist';
+    },
+    default: [],
+},
+
 subscriptionStatus: {
     type: String,
     enum: ["none", "active", "expired"],

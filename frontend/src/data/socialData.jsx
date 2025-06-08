@@ -1,13 +1,9 @@
 import { PiInstagramLogoFill, PiXLogoFill} from "react-icons/pi";
 
-export const socialData = [{
-    id: 0,
-    icon: <PiXLogoFill />,
-    link: ''
-},
+export const socialData = [
 {
     id: 1,
     icon: <PiInstagramLogoFill />,
-    link: ''
+    link: 'https://www.instagram.com/_aura_wellness?igsh=aTAzeXZxOXE5cGdt'
 }
 ]

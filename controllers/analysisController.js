@@ -352,6 +352,7 @@ const addUserAssessment = async(req, res) => {
           const desiredProfile = `
               Patient is seeking help for:
               Symptoms: ${analysis.description}
+              Date of Birth: ${findUser.dateOfBirth}
               Needs therapist experienced in: ${analysis.assessments.map(val => val.test).join(', ')}
           `;
           const embedding = await getEmbedding(desiredProfile);
@@ -412,6 +413,8 @@ const matchTherapist = async (req, res) => {
       resume: 1,
       certifications: 1,
       profilePhoto: 1,
+      yearsOfExperience: 1,
+      specialties: 1,
       score: { $meta: 'vectorSearchScore' }
     }
   }, {

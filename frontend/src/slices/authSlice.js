@@ -43,7 +43,9 @@ const initialState = {
         governmentIssuedId: '',
         certifications: '',
         resume: '',
-        profilePhoto: ''
+        profilePhoto: '',
+        yearsOfExperience: '',
+        specialties:  []
     },
     signupErrorMessage: '',
     signupLoad: false,
@@ -183,6 +185,8 @@ const authSlice = createSlice({
             state.signupInputs.profilePhoto = action.payload.profilePhoto
             state.signupInputs.role = action.payload.role
             state.signupInputs.resume = action.payload.resume
+            state.signupInputs.yearsOfExperience = action.payload.yearsOfExperience
+            state.signupInputs.specialties = action.payload.specialties || []
         },
         togglePasswordVisibility: (state, action) => {
           const {type} = action.payload
@@ -205,7 +209,9 @@ const authSlice = createSlice({
               governmentIssuedId: '',
               certifications: '',
               resume: '',
-              profilePhoto: ''
+              profilePhoto: '',
+              yearsOfExperience: '',
+              specialties: []
            }
         }
     },
@@ -268,7 +274,9 @@ const authSlice = createSlice({
                   governmentIssuedId: '',
                   certifications: '',
                   resume: '',
-                  profilePhoto: ''
+                  profilePhoto: '',
+                  yearsOfExperience: '',
+                  specialties: []
               }
             } else {
               state.signupLoad = false

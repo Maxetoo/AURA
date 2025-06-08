@@ -26,7 +26,9 @@ const signup = async (req, res) => {
         governmentIssuedId,
         certifications,
         resume,
-        profilePhoto
+        profilePhoto,
+        yearsOfExperience,
+        specialties
     } = req.body;
 
     if (!role) {
@@ -38,7 +40,7 @@ const signup = async (req, res) => {
     }
 
     if (role === 'therapist') {
-        if (!governmentIssuedId || !certifications || !resume || !profilePhoto) {
+        if (!governmentIssuedId || !certifications || !resume || !profilePhoto || !yearsOfExperience || !specialties) {
             throw new CustomError.BadRequestError('Please fill up therapist credentials');
         }
     }
@@ -76,7 +78,6 @@ const signup = async (req, res) => {
                     certificationsText += '\n' + await extractTextFromPDF(fileBuffer);
                 } else {
                     certificationsText += '\n' + await extractTextFromImage(fileBuffer);
-                    console.log(certificationsText);
                 }
             } catch (err) {
                 console.error(`Failed to extract text from certification: ${certUrl}`, err.message);
@@ -88,6 +89,9 @@ const signup = async (req, res) => {
             Therapist Ready to treat a Patient having Profile:
             Name: ${firstname} ${lastname}
             Areas of Expertise: ${certificationsText}
+            Years of Experience: ${yearsOfExperience}
+            Specialties: ${specialties}
+            Date of Birth: ${dateOfBirth}
         `;
 
         const embedding = await getEmbedding(therapistProfile);
@@ -97,6 +101,8 @@ const signup = async (req, res) => {
             certifications,
             resume,
             profilePhoto,
+            yearsOfExperience: parseInt(yearsOfExperience),
+            specialties,
             embedding: Array.from(embedding)
         });
     }

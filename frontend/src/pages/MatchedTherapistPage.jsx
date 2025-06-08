@@ -41,16 +41,30 @@ const MatchedTherapistPage = () => {
                 className="mySwiper">
                   {
                     therapists.map((therapist) => {
-                      const {_id, firstname, lastname, email, certifications, profilePhoto} = therapist || {};
+                      const {_id, firstname, lastname, email, certifications, profilePhoto, yearsOfExperience, specialties} = therapist || {};
                       return <SwiperSlide key={_id} className='slide'>
                         <div className="slide_content">
                           <img src={profilePhoto} alt="profile"/>
-
                           <div className="therapist_details">
                             <h3>Dr {lastname} {firstname}</h3>
                             <p>Therapist</p>
-                            <p>{email}</p>
+                            <p>
+                              <strong>
+                                Email: 
+                              </strong>
+                               {' '}{email}</p>
+                            <p>
+                              <strong>
+                              Experience: 
+                              </strong>
+                              {' '}{yearsOfExperience} years of experience</p>
+                            <p>
+                              <strong>
+                              Specialties:
+                              </strong>
+                              {' '}{specialties.join(', ')}</p>
                           </div>
+
                           <div className="btn_container">
                             <button type='button'>
                               Book Session
