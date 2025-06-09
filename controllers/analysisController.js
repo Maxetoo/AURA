@@ -13,6 +13,7 @@ const { getEmbedding } = await import('../services/transformer.mjs');
 };
 
 
+
 const runPatientAnalysis = async (req, res) => {
   const { symptoms } = req.body;
   const user = req.user.userId || '';
@@ -31,7 +32,7 @@ const runPatientAnalysis = async (req, res) => {
 
   const findUser = await User.findById(user);
 
-  // Step 1: Validate if symptom is actually a real symptom and not fake input
+  // Validate if symptom input is genuine
   const validationPrompt = `
     Someone said the following: "${symptoms}"
 
@@ -52,16 +53,28 @@ const runPatientAnalysis = async (req, res) => {
       throw new CustomError.BadRequestError('Symptom is not valid for test analysis.');
     }
 
+    // Ask for relevant mental health screening tests
     const prompt = `
-      A user describes their symptoms as follows: "${symptoms}"
+      A user described the following symptoms: "${symptoms}"
 
-      Based on these symptoms, suggest the most appropriate mental health screening tests. Choose from standard assessments like PHQ-9 (Depression), GAD-7 (Anxiety), ASRS (ADHD), PCL-5 (PTSD), ISI (Insomnia), etc.
-
-      Respond with a JSON array like this:
+      1. Carefully analyze the symptoms and identify the key concerns without assuming common conditions.
+      2. Recommend only the **most relevant** standardized mental health screening tests based **strictly on the symptoms provided**.
+      3. Avoid suggesting depression (PHQ-9) or anxiety (GAD-7) assessments unless the symptoms clearly support those conditions.
+      4. Choose only from evidence-based tests like:
+         - PHQ-9 (Depression)
+         - GAD-7 (Anxiety)
+         - ASRS (ADHD)
+         - PCL-5 (PTSD)
+         - ISI (Insomnia)
+         - MDQ (Bipolar)
+         - AUDIT (Alcohol Use)
+         - DAST-10 (Substance Use)
+      5. Respond strictly with a JSON array formatted like this:
       [
-        { "test": "PHQ-9 Depression Assessment", "reason": "Screens for depression symptoms" },
-        { "test": "GAD-7 Anxiety Assessment", "reason": "Screens for generalized anxiety disorder" }
+        { "test": "TEST NAME", "reason": "Reason for this test based on the symptoms" }
       ]
+
+      Only include tests where there is a **strong justification**.
     `;
 
     const completion = await openai.chat.completions.create({
@@ -70,7 +83,7 @@ const runPatientAnalysis = async (req, res) => {
     });
 
     const text = completion.choices[0].message.content;
-    const jsonMatch = text.match(/\[\s*{[\s\S]*}\s*\]/);
+    const jsonMatch = text.match(/\[\s*{[\s\S]*?}\s*\]/);
 
     if (!jsonMatch) {
       throw new CustomError.BadRequestError("Failed to extract valid JSON from AI response");
@@ -78,6 +91,7 @@ const runPatientAnalysis = async (req, res) => {
 
     const parsedTests = JSON.parse(jsonMatch[0]);
 
+    // Save analysis
     const userAssessmentAnalysis = await Analysis.create({
       user,
       description: symptoms,
@@ -85,15 +99,10 @@ const runPatientAnalysis = async (req, res) => {
     });
 
     if (findUser) {
-      // push the recommended tests 
       findUser.recommendedTests.push(userAssessmentAnalysis._id);
-      // push active recommended test id
-      findUser.activeAssessmentId = userAssessmentAnalysis._id
+      findUser.activeAssessmentId = userAssessmentAnalysis._id;
+      await findUser.save();
     }
-
-    await findUser.save();
-
-    console.log(user.activeAssessmentId)
 
     res.status(StatusCodes.CREATED).json({ suggestedTests: userAssessmentAnalysis });
 
@@ -101,6 +110,7 @@ const runPatientAnalysis = async (req, res) => {
     res.status(500).json({ message: "AI failed to suggest tests", error: error.message || error });
   }
 };
+
 
 
 
@@ -255,8 +265,8 @@ const getMyAssessments = async(req, res) => {
       const statusTitle = assessment?.status === 'in_progress'
         ? 'Almost there!'
         : assessment?.status === 'completed'
-        ? 'Assessment Complete'
-        : 'Assessment In Progress';
+        ? 'Assessment Complete!'
+        : 'Assessment In Progress...';
 
     res.status(StatusCodes.OK).json({
       assessment,
@@ -346,17 +356,20 @@ const addUserAssessment = async(req, res) => {
         reviewItem.answers = answers;
       }
 
-      if (assessment.review.length === analysis.assessments.length) {
-          assessment.status = 'completed';
+      const allAnswered = analysis.assessments.every(assess =>
+        assessment.review.some(r => r.testCode === assess.test)
+      );
 
-          const desiredProfile = `
-              Patient is seeking help for:
-              Symptoms: ${analysis.description}
-              Date of Birth: ${findUser.dateOfBirth}
-              Needs therapist experienced in: ${analysis.assessments.map(val => val.test).join(', ')}
-          `;
-          const embedding = await getEmbedding(desiredProfile);
-          assessment.embedding = Array.from(embedding);
+      if (allAnswered) {
+        assessment.status = 'completed';
+        const desiredProfile = `
+            Patient is seeking help for:
+            Symptoms: ${analysis.description}
+            Date of Birth: ${findUser.dateOfBirth}
+            Needs therapist experienced in: ${analysis.assessments.map(val => val.test).join(', ')}
+        `;
+        const embedding = await getEmbedding(desiredProfile);
+        assessment.embedding = Array.from(embedding);
       }
     }   
  

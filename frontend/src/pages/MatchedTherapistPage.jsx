@@ -35,10 +35,13 @@ const MatchedTherapistPage = () => {
             <></>
             <div className="match_container">
               <Swiper
-                effect={'cards'}
-                grabCursor={true}
-                modules={[EffectCards]}
-                className="mySwiper">
+                  slidesPerView={1.1}
+                  effect={'cards'}
+                  spaceBetween={20}
+                  centeredSlides={true}
+                  grabCursor={true}
+                  modules={[EffectCards]}
+                  className="mySwiper">
                   {
                     therapists.map((therapist) => {
                       const {_id, firstname, lastname, email, certifications, profilePhoto, yearsOfExperience, specialties} = therapist || {};
@@ -132,11 +135,10 @@ const Wrapper = styled.div`
     width: 100%;
     height: auto;
     min-height: 300px;
-    background: #f5f5f5;
-    border: solid 0.5px var(--stroke-color);
-    border-radius: 10px;
+    background: var(--primary-color);
+    border-radius: 5px;
     margin-top: 3rem;
-    padding: 2.5rem 1.5rem;
+    padding: 3rem 1rem;
   }
 
     .mySwiper {
@@ -162,7 +164,9 @@ const Wrapper = styled.div`
   .slide {
     width: 100%;
     height: 100%;
-    padding: 1rem;
+    padding: 3rem 1rem;
+    background: #ffffff;
+    border: solid 2px var(--stroke-color);
   }
 
   .slide_content {
@@ -277,3 +281,6 @@ const LinkButton = styled(Link)`
 `;
 
 export default MatchedTherapistPage
+
+
+
